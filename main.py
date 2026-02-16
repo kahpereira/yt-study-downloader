@@ -38,12 +38,25 @@ async def download_video(request: DownloadRequest):
             'merge_output_format': 'mp4',
             'extractor_args': {
                 'youtube': {
-                    'player_client': ['android', 'web']
+                    'player_client': ['android', 'ios', 'web'],
+                    'skip': ['webpage']
                 }
             },
+            'http_headers': {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                'Accept-Language': 'en-us,en;q=0.5',
+                'Sec-Fetch-Mode': 'navigate',
+            },
+            'no_check_certificate': True,
             'no_warnings': False,
             'quiet': False,
         }
+
+        cookies_file = os.getenv('YOUTUBE_COOKIES_FILE')
+        if cookies_file and os.path.exists(cookies_file):
+            options['cookiefile'] = cookies_file
+        
         with yt_dlp.YoutubeDL(options) as ydl:
             info = ydl.extract_info(request.url, download=True)
             filename = ydl.prepare_filename(info)
